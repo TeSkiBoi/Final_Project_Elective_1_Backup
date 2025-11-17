@@ -1,0 +1,161 @@
+════════════════════════════════════════════════════════════════════════════════
+  DATABASE SETUP - PROFILE SETTINGS FEATURE
+════════════════════════════════════════════════════════════════════════════════
+
+QUICK COMMAND:
+
+Copy and paste this SQL command into your database:
+
+────────────────────────────────────────────────────────────────────────────────
+ALTER TABLE users ADD COLUMN profile_picture VARCHAR(255) DEFAULT NULL;
+────────────────────────────────────────────────────────────────────────────────
+
+════════════════════════════════════════════════════════════════════════════════
+  HOW TO EXECUTE
+════════════════════════════════════════════════════════════════════════════════
+
+OPTION 1: MySQL Command Line
+────────────────────────────────────────────────────────────────────────────────
+$ mysql -u root -p student_information_system
+mysql> ALTER TABLE users ADD COLUMN profile_picture VARCHAR(255) DEFAULT NULL;
+mysql> EXIT;
+────────────────────────────────────────────────────────────────────────────────
+
+OPTION 2: phpMyAdmin
+────────────────────────────────────────────────────────────────────────────────
+1. Open phpMyAdmin (http://localhost/phpmyadmin)
+2. Select database: student_information_system
+3. Click "SQL" tab at top
+4. Paste the SQL command above
+5. Click "Go" button
+────────────────────────────────────────────────────────────────────────────────
+
+OPTION 3: MySQL Import File
+────────────────────────────────────────────────────────────────────────────────
+$ mysql -u root -p student_information_system < database/setup_profile_settings.sql
+────────────────────────────────────────────────────────────────────────────────
+
+OPTION 4: Workbench
+────────────────────────────────────────────────────────────────────────────────
+1. Open MySQL Workbench
+2. Connect to your database
+3. Open File > Open SQL Script
+4. Select: database/setup_profile_settings.sql
+5. Click "Execute" (lightning icon)
+────────────────────────────────────────────────────────────────────────────────
+
+════════════════════════════════════════════════════════════════════════════════
+  VERIFY INSTALLATION
+════════════════════════════════════════════════════════════════════════════════
+
+After running the SQL, verify the column was added:
+
+SQL Command:
+────────────────────────────────────────────────────────────────────────────────
+DESCRIBE users;
+────────────────────────────────────────────────────────────────────────────────
+
+You should see a new row:
+────────────────────────────────────────────────────────────────────────────────
+Field:            profile_picture
+Type:             varchar(255)
+Null:             YES
+Key:              (empty)
+Default:          NULL
+Extra:            (empty)
+────────────────────────────────────────────────────────────────────────────────
+
+════════════════════════════════════════════════════════════════════════════════
+  WHAT THIS COLUMN DOES
+════════════════════════════════════════════════════════════════════════════════
+
+The profile_picture column stores:
+  • Filename of uploaded profile picture
+  • Null if no picture uploaded
+  • Format: {user_id}_{timestamp}.{extension}
+  • Example: U001_1731688234.jpg
+
+Files are stored in:
+  └─ assets/uploads/profiles/
+
+Database relationship:
+  users.profile_picture ──→ filename in filesystem
+  
+Example entry:
+  user_id: U001
+  profile_picture: "U001_1731688234.jpg"
+  File location: assets/uploads/profiles/U001_1731688234.jpg
+
+════════════════════════════════════════════════════════════════════════════════
+  CURRENT TABLE STRUCTURE (AFTER UPDATE)
+════════════════════════════════════════════════════════════════════════════════
+
+Complete users table structure:
+
+CREATE TABLE users (
+    user_id VARCHAR(10) PRIMARY KEY,
+    fullname VARCHAR(150) NOT NULL,
+    username VARCHAR(100) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role_id INT NOT NULL,
+    status ENUM('active', 'inactive') DEFAULT 'active',
+    profile_picture VARCHAR(255) DEFAULT NULL,          ← NEW COLUMN
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (role_id) REFERENCES roles(role_id)
+);
+
+════════════════════════════════════════════════════════════════════════════════
+  ROLLBACK (If needed)
+════════════════════════════════════════════════════════════════════════════════
+
+If you need to remove the column (NOT RECOMMENDED after data is added):
+
+SQL Command:
+────────────────────────────────────────────────────────────────────────────────
+ALTER TABLE users DROP COLUMN profile_picture;
+────────────────────────────────────────────────────────────────────────────────
+
+⚠️  WARNING: This will delete all profile picture references!
+
+════════════════════════════════════════════════════════════════════════════════
+  TROUBLESHOOTING
+════════════════════════════════════════════════════════════════════════════════
+
+Q: Error - "Duplicate column name"?
+A: Column already exists. This is fine. You can skip this step.
+
+Q: Error - "Access denied for user"?
+A: Check username and password. Use correct credentials.
+
+Q: Error - "Database not found"?
+A: Ensure database name is correct: student_information_system
+
+Q: How do I check if it worked?
+A: Run: DESCRIBE users;
+   Should show profile_picture column with varchar(255) type.
+
+════════════════════════════════════════════════════════════════════════════════
+  NEXT STEPS
+════════════════════════════════════════════════════════════════════════════════
+
+After database setup:
+
+1. ✓ Run database migration (above)
+2. → Set directory permissions: chmod 755 assets/uploads/profiles
+3. → Access feature: /App/View/profilesetting.php
+4. → Test all functionality
+5. → Review activity logs in /App/View/activitylog.php
+
+════════════════════════════════════════════════════════════════════════════════
+  REFERENCE
+════════════════════════════════════════════════════════════════════════════════
+
+Related files:
+  • database/setup_profile_settings.sql       - Complete SQL script
+  • QUICK_START.md                            - 5-minute setup
+  • PROFILE_SETTINGS_GUIDE.md                 - Technical docs
+  • README_PROFILE_SETTINGS.md                - Feature overview
+
+════════════════════════════════════════════════════════════════════════════════

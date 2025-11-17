@@ -1,0 +1,25 @@
+<IfModule mod_rewrite.c>
+    # Enable Rewrite Engine
+    RewriteEngine On
+    
+    # Set the base path for rewrites
+    RewriteBase /FINAL_PROJECT_ELECTIVE1/App/View/
+    
+    # Remove .php extension from URLs
+    # This allows users to access course.php as /course
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^([a-zA-Z0-9_-]+)/?$ $1.php [L]
+    
+    # Alternative: Redirect .php URLs to non-.php URLs (optional)
+    # RewriteCond %{REQUEST_FILENAME} !-f
+    # RewriteCond %{REQUEST_FILENAME} !-d
+    # RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /.*\.php\ HTTP/
+    # RewriteRule ^(.+)\.php$ /$1 [R=301,L]
+</IfModule>
+
+# Alternative method without mod_rewrite (if mod_rewrite is not available)
+<IfModule !mod_rewrite.c>
+    # If mod_rewrite is not available, this configuration won't work
+    # Please enable mod_rewrite in your Apache configuration
+</IfModule>
