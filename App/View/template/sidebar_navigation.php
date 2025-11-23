@@ -8,7 +8,6 @@
                     Dashboard
                 </a>
                 <?php if($roleId == 1 || $roleId == 2): ?>
-<<<<<<< HEAD
                     <div class="sb-sidenav-menu-heading">Records</div>
                     <a class="nav-link" href="students.php">
                         <div class="sb-nav-link-icon"><i class="fas fa-graduation-cap"></i></div>
@@ -39,21 +38,6 @@
                         Children
                     </a>
                     <div class="sb-sidenav-menu-heading">Records</div>
-=======
-                    <div class="sb-sidenav-menu-heading">Academic</div>
-                    <a class="nav-link" href="students.php">
-                        <div class="sb-nav-link-icon"><i class="fas fa-graduation-cap"></i></div>
-                        Students
-                    </a>
-                    <a class="nav-link" href="enrollment.php">
-                        <div class="sb-nav-link-icon"><i class="fas fa-graduation-cap"></i></div>
-                        Enrollment
-                    </a>
-                    <a class="nav-link" href="patient.php">
-                        <div class="sb-nav-link-icon"><i class="fas fa-graduation-cap"></i></div>
-                        Patient
-                    </a>
->>>>>>> a84cc9d557fd531cf6d70199f7d0406b4e080214
                 <?php endif; ?>
 
                 <?php if($roleId == 2): ?>
