@@ -142,11 +142,13 @@
                                 <label for="role_id" class="form-label">Role <span class="text-danger">*</span></label>
                                 <select class="form-select" id="role_id" name="role_id" required>
                                     <option value="">Select Role</option>
-                                    <?php if ($showRole && count($showRole) > 0): ?>
+                                    <?php // if ($roles && count($roles) > 0): ?>
                                         <?php foreach ($showRole as $role): ?>
-                                            <option value="<?php echo $role['role_id']; ?>"><?php echo htmlspecialchars($role['role_name']); ?></option>
+                                            <option value="<?php echo $role['role_id']; ?>">
+                                                <?php echo $role['role_name']; ?>
+                                            </option>
                                         <?php endforeach; ?>
-                                    <?php endif; ?>
+                                    <?php // endif; ?>
                                 </select>
                             </div>
                             <div class="mb-3">
