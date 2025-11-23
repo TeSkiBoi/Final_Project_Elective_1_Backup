@@ -17,17 +17,29 @@
         }
         
         .sb-topnav {
+<<<<<<< HEAD
             background-color: #452829!important;
+=======
+            background-color: var(--apple-green) !important;
+>>>>>>> a84cc9d557fd531cf6d70199f7d0406b4e080214
         }
         .modal-title {
             color: var(--apple-green);
         }
         .bg-primary {
+<<<<<<< HEAD
             background-color: blue !important;
         }
         .btn-primary {
             background-color: #452829;
             border-color: #452829;
+=======
+            background-color: var(--apple-green) !important;
+        }
+        .btn-primary {
+            background-color: var(--apple-green);
+            border-color: var(--apple-green);
+>>>>>>> a84cc9d557fd531cf6d70199f7d0406b4e080214
         }
         .btn-primary:hover {
             background-color: var(--apple-green-dark);

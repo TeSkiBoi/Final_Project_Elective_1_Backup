@@ -145,7 +145,11 @@
                                     <?php // if ($roles && count($roles) > 0): ?>
                                         <?php foreach ($showRole as $role): ?>
                                             <option value="<?php echo $role['role_id']; ?>">
+<<<<<<< HEAD
                                                 <?php echo $role['role_name']; ?>
+=======
+                                                <?php echo $role['role_id']."-".$role['role_name']; ?>
+>>>>>>> a84cc9d557fd531cf6d70199f7d0406b4e080214
                                             </option>
                                         <?php endforeach; ?>
                                     <?php // endif; ?>
@@ -196,13 +200,22 @@
                                 <label for="role_id_edit" class="form-label">Role <span class="text-danger">*</span></label>
                                 <select class="form-select" id="role_id_edit" name="role_id" required>
                                     <option value="">Select Role</option>
+<<<<<<< HEAD
                                     <?//if ($showRole && count($roles) > 0): ?>
                                         <?php foreach ($showRole as $role): ?>
+=======
+                                    <?php if ($roles && count($roles) > 0): ?>
+                                        <?php foreach ($roles as $role): ?>
+>>>>>>> a84cc9d557fd531cf6d70199f7d0406b4e080214
                                             <option value="<?php echo $role['role_id']; ?>">
                                                 <?php echo htmlspecialchars($role['role_name']); ?>
                                             </option>
                                         <?php endforeach; ?>
+<<<<<<< HEAD
                                     <?php //endif; ?>
+=======
+                                    <?php endif; ?>
+>>>>>>> a84cc9d557fd531cf6d70199f7d0406b4e080214
                                 </select>
                             </div>
                             <div class="mb-3">

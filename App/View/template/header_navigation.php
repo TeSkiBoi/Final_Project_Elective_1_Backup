@@ -9,8 +9,13 @@ $roleId = getCurrentUserRole();
 <nav class="sb-topnav navbar navbar-expand navbar-dark">
     <!-- Navbar Brand-->
     <a class="navbar-brand ps-3" href="index.php">
+<<<<<<< HEAD
         <img src="../../assets/img/BIGA-LOGO.png" alt="BIGA Logo" height="40" class="me-2">
         BMS Admin
+=======
+        <img src="../../assets/img/MARSU LOGO.png" alt="MarSU Logo" height="40" class="me-2">
+        MarSU Admin
+>>>>>>> a84cc9d557fd531cf6d70199f7d0406b4e080214
     </a>
     <!-- Sidebar Toggle-->
     <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!">
