@@ -8,20 +8,20 @@
                     Dashboard
                 </a>
                 <?php if($roleId == 1 || $roleId == 2): ?>
-                    <div class="sb-sidenav-menu-heading">Records</div>
+                    <!--<div class="sb-sidenav-menu-heading">Records</div>
                     <a class="nav-link" href="students.php">
                         <div class="sb-nav-link-icon"><i class="fas fa-graduation-cap"></i></div>
                         Residents
-                    </a>
+                    </a>-->
                     <a class="nav-link" href="certificate_generator.php">
                         <div class="sb-nav-link-icon"><i class="fas fa-file-signature"></i></div>
                         Certificate Generator
                     </a>
-                    <a class="nav-link" href="enrollment.php">
+                    <a class="nav-link" href="household.php">
                         <div class="sb-nav-link-icon"><i class="fas fa-graduation-cap"></i></div>
                         Households
                     </a>
-                    <a class="nav-link" href="patient.php">
+                    <!--<a class="nav-link" href="patient.php">
                         <div class="sb-nav-link-icon"><i class="fas fa-graduation-cap"></i></div>
                         Seniors
                     </a>
@@ -36,7 +36,7 @@
                     <a class="nav-link" href="patient.php">
                         <div class="sb-nav-link-icon"><i class="fas fa-graduation-cap"></i></div>
                         Children
-                    </a>
+                    </a>-->
                     <div class="sb-sidenav-menu-heading">Records</div>
                 <?php endif; ?>
 
@@ -57,7 +57,7 @@
                     </a>
                     <div class="collapse" id="collapseMaintenance" data-bs-parent="#sidenavAccordion">
                         <nav class="sb-sidenav-menu-nested nav">
-                            <a class="nav-link" href="faculty.php">
+                            <!--<a class="nav-link" href="faculty.php">
                                 <div class="sb-nav-link-icon"><i class="fas fa-graduation-cap"></i></div>
                                 faculty
                             </a>
@@ -68,7 +68,7 @@
                             <a class="nav-link" href="department.php">
                                 <div class="sb-nav-link-icon"><i class="fas fa-building"></i></div>
                                 Department
-                            </a>
+                            </a>-->
                             <a class="nav-link" href="user.php">
                                 <div class="sb-nav-link-icon"><i class="fas fa-user"></i></div>
                                 User
