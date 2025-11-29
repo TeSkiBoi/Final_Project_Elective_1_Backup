@@ -15,7 +15,12 @@ class Database {
      * Connect to Database
      */
     public function connect() {
-        $this->connection = new mysqli(
+        // Set connection timeout and error reporting
+        mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+        
+        $this->connection = new mysqli();
+        $this->connection->options(MYSQLI_OPT_CONNECT_TIMEOUT, 5);
+        $this->connection->real_connect(
             $this->host,
             $this->username,
             $this->password,
@@ -34,6 +39,9 @@ class Database {
             exit;
         }
 
+        // Set charset
+        $this->connection->set_charset("utf8mb4");
+        
         return $this->connection;
     }
 

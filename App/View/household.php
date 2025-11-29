@@ -133,17 +133,9 @@
                                 <input type="text" id="address" name="address" class="form-control" required placeholder="Enter complete address">
                             </div>
 
-                            <hr class="my-4">
-
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h6 class="mb-0 text-primary"><i class="fas fa-users me-2"></i>Household Members</h6>
-                                <button type="button" class="btn btn-sm btn-success" id="addMemberBtn">
-                                    <i class="fas fa-plus me-1"></i>Add Member
-                                </button>
-                            </div>
-
-                            <div id="membersContainer">
-                                <!-- Member forms will be added here dynamically -->
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Note:</strong> After creating the household, you can add members by clicking the "Edit" button.
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -333,78 +325,6 @@
                 
                 return age >= 0 ? age : 0;
             }
-
-            /**
-             * Add Member Form Fields (Create Modal)
-             */
-            document.getElementById('addMemberBtn').addEventListener('click', function() {
-                memberCount++;
-                const memberHtml = `
-                    <div class="member-form border rounded p-3 mb-3" id="member-${memberCount}">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6 class="mb-0 text-secondary"><i class="fas fa-user me-2"></i>Member #${memberCount}</h6>
-                            <button type="button" class="btn btn-sm btn-danger remove-member-btn" data-member-id="${memberCount}">
-                                <i class="fas fa-times"></i> Remove
-                            </button>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4 mb-2">
-                                <label class="form-label">First Name <span class="text-danger">*</span></label>
-                                <input type="text" name="member_first_name[]" class="form-control form-control-sm" required placeholder="First name">
-                            </div>
-                            <div class="col-md-4 mb-2">
-                                <label class="form-label">Middle Name</label>
-                                <input type="text" name="member_middle_name[]" class="form-control form-control-sm" placeholder="Middle name (optional)">
-                            </div>
-                            <div class="col-md-4 mb-2">
-                                <label class="form-label">Last Name <span class="text-danger">*</span></label>
-                                <input type="text" name="member_last_name[]" class="form-control form-control-sm" required placeholder="Last name">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-3 mb-2">
-                                <label class="form-label">Birth Date <span class="text-danger">*</span></label>
-                                <input type="date" name="member_birth_date[]" class="form-control form-control-sm birth-date-input" required>
-                            </div>
-                            <div class="col-md-2 mb-2">
-                                <label class="form-label">Age</label>
-                                <input type="number" name="member_age[]" class="form-control form-control-sm age-display" readonly placeholder="Auto">
-                            </div>
-                            <div class="col-md-2 mb-2">
-                                <label class="form-label">Gender <span class="text-danger">*</span></label>
-                                <select name="member_gender[]" class="form-select form-select-sm" required>
-                                    <option value="">Select</option>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                </select>
-                            </div>
-                            <div class="col-md-2 mb-2">
-                                <label class="form-label">Contact No</label>
-                                <input type="text" name="member_contact[]" class="form-control form-control-sm" placeholder="09XXXXXXXXX">
-                            </div>
-                            <div class="col-md-3 mb-2">
-                                <label class="form-label">Email</label>
-                                <input type="email" name="member_email[]" class="form-control form-control-sm" placeholder="email@example.com">
-                            </div>
-                        </div>
-                    </div>
-                `;
-                document.getElementById('membersContainer').insertAdjacentHTML('beforeend', memberHtml);
-            });
-
-            /**
-             * Remove Member Form Fields (Create Modal)
-             */
-            document.getElementById('membersContainer').addEventListener('click', function(e) {
-                if (e.target.classList.contains('remove-member-btn') || e.target.closest('.remove-member-btn')) {
-                    const btn = e.target.closest('.remove-member-btn');
-                    const memberId = btn.getAttribute('data-member-id');
-                    const memberForm = document.getElementById(`member-${memberId}`);
-                    if (memberForm) {
-                        memberForm.remove();
-                    }
-                }
-            });
 
             /**
              * Add Member Form Fields (Edit Modal)
@@ -624,42 +544,6 @@
                     return;
                 }
 
-                // Collect members data
-                const members = [];
-                const memberForms = document.querySelectorAll('.member-form');
-                
-                for (let form of memberForms) {
-                    const firstName = form.querySelector('input[name="member_first_name[]"]').value.trim();
-                    const middleName = form.querySelector('input[name="member_middle_name[]"]').value.trim();
-                    const lastName = form.querySelector('input[name="member_last_name[]"]').value.trim();
-                    const birthDate = form.querySelector('input[name="member_birth_date[]"]').value;
-                    const gender = form.querySelector('select[name="member_gender[]"]').value;
-                    const contact = form.querySelector('input[name="member_contact[]"]').value.trim();
-                    const email = form.querySelector('input[name="member_email[]"]').value.trim();
-                    const age = form.querySelector('input[name="member_age[]"]').value;
-
-                    if (!firstName || !lastName || !birthDate || !gender) {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Member Validation Error',
-                            text: 'Please fill all required fields for each member (First Name, Last Name, Birth Date, Gender).',
-                            confirmButtonColor: '#6ec207'
-                        });
-                        return;
-                    }
-
-                    members.push({
-                        first_name: firstName,
-                        middle_name: middleName || '',
-                        last_name: lastName,
-                        birth_date: birthDate,
-                        gender: gender,
-                        age: age ? parseInt(age) : calculateAge(birthDate),
-                        contact_no: contact || '',
-                        email: email || ''
-                    });
-                }
-
                 // Show loading state
                 const submitBtn = this.querySelector('button[type="submit"]');
                 const originalText = submitBtn.innerHTML;
@@ -667,7 +551,7 @@
                 submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating...';
 
                 try {
-                    const response = await fetch(API_URL + '?action=createWithMembers', {
+                    const response = await fetch(API_URL + '?action=create', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -676,37 +560,36 @@
                             family_no: parseInt(family_no),
                             full_name: full_name,
                             address: address,
-                            income: income ? parseFloat(income) : 0.00,
-                            members: members
-                        })
+                            income: income ? parseFloat(income) : 0.00
+                        }),
+                        signal: AbortSignal.timeout(30000) // 30 second timeout
                     });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
 
                     const result = await response.json();
 
                     if (result.success) {
-                        // Success Alert
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success!',
-                            text: result.message,
-                            confirmButtonColor: '#6ec207'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                // Reset form
-                                document.getElementById('createHouseholdForm').reset();
-                                document.getElementById('membersContainer').innerHTML = '';
-                                memberCount = 0;
-
-                                // Close modal
-                                const modal = bootstrap.Modal.getInstance(document.getElementById('createHouseholdModal'));
-                                modal.hide();
-
-                                // Reload page to show new household
-                                setTimeout(() => {
-                                    location.reload();
-                                }, 500);
-                            }
-                        });
+                        // Close modal first to prevent focus issues
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('createHouseholdModal'));
+                        modal.hide();
+                        
+                        // Reset form
+                        document.getElementById('createHouseholdForm').reset();
+                        
+                        // Wait for modal to fully close before showing alert
+                        setTimeout(() => {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: result.message,
+                                confirmButtonColor: '#6ec207'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        }, 300);
                     } else {
                         // Error handling based on error type
                         let errorTitle = 'Error';
@@ -725,10 +608,18 @@
                     }
                 } catch (error) {
                     console.error('Error:', error);
+                    
+                    let errorMessage = 'Failed to connect to the server. Please check your connection and try again.';
+                    if (error.name === 'TimeoutError') {
+                        errorMessage = 'Request timed out. The server is taking too long to respond.';
+                    } else if (error.message.includes('HTTP error')) {
+                        errorMessage = 'Server error: ' + error.message;
+                    }
+                    
                     Swal.fire({
                         icon: 'error',
                         title: 'Network Error',
-                        text: 'Failed to connect to the server. Please check your connection and try again.',
+                        text: errorMessage,
                         confirmButtonColor: '#dc3545'
                     });
                 } finally {
@@ -845,6 +736,9 @@
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Updating...';
 
+                // Log member operations for debugging
+                console.log('Member Operations:', memberOperations);
+
                 try {
                     const response = await fetch(API_URL + '?action=updateWithMembers', {
                         method: 'POST',
@@ -858,26 +752,32 @@
                             address: address,
                             income: income ? parseFloat(income) : 0.00,
                             memberOperations: memberOperations
-                        })
+                        }),
+                        signal: AbortSignal.timeout(30000) // 30 second timeout
                     });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
 
                     const result = await response.json();
 
                     if (result.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Updated!',
-                            text: result.message,
-                            confirmButtonColor: '#6ec207'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                const modal = bootstrap.Modal.getInstance(document.getElementById('updateHouseholdModal'));
-                                modal.hide();
-                                setTimeout(() => {
-                                    location.reload();
-                                }, 500);
-                            }
-                        });
+                        // Close modal first to prevent focus issues
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('updateHouseholdModal'));
+                        modal.hide();
+                        
+                        // Wait for modal to fully close before showing alert
+                        setTimeout(() => {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Updated!',
+                                text: result.message,
+                                confirmButtonColor: '#6ec207'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        }, 300);
                     } else {
                         Swal.fire({
                             icon: 'error',
@@ -888,10 +788,18 @@
                     }
                 } catch (error) {
                     console.error('Error:', error);
+                    
+                    let errorMessage = 'Failed to connect to the server. Please check your connection and try again.';
+                    if (error.name === 'AbortError') {
+                        errorMessage = 'Request timed out. The server is taking too long to respond.';
+                    } else if (error.message.includes('HTTP error')) {
+                        errorMessage = 'Server error: ' + error.message;
+                    }
+                    
                     Swal.fire({
                         icon: 'error',
                         title: 'Network Error',
-                        text: 'Failed to connect to the server.',
+                        text: errorMessage,
                         confirmButtonColor: '#dc3545'
                     });
                 } finally {
@@ -1013,8 +921,6 @@
              */
             document.getElementById('createHouseholdModal').addEventListener('hide.bs.modal', function() {
                 document.getElementById('createHouseholdForm').reset();
-                document.getElementById('membersContainer').innerHTML = '';
-                memberCount = 0;
             });
 
             document.getElementById('updateHouseholdModal').addEventListener('hide.bs.modal', function() {

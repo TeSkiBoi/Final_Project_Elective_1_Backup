@@ -223,8 +223,8 @@
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label for="age_edit" class="form-label">Age <span class="text-danger">*</span></label>
-                                <input type="number" id="age_edit" name="age" class="form-control" required min="1" max="150">
+                                <label for="age_edit" class="form-label">Age</label>
+                                <input type="number" id="age_edit" name="age" class="form-control" readonly placeholder="Auto-calculated from birth date">
                             </div>
                             <div class="mb-3">
                                 <label for="contact_no_edit" class="form-label">Contact Number</label>
@@ -646,6 +646,25 @@
 
             document.getElementById('deleteResidentModal').addEventListener('hide.bs.modal', function() {
                 document.getElementById('deleteResidentForm').reset();
+            });
+
+            /**
+             * Auto-calculate age when birth date changes in edit form
+             */
+            document.getElementById('birth_date_edit').addEventListener('change', function() {
+                const birthDate = this.value;
+                if (birthDate) {
+                    const birth = new Date(birthDate);
+                    const today = new Date();
+                    let age = today.getFullYear() - birth.getFullYear();
+                    const monthDiff = today.getMonth() - birth.getMonth();
+                    
+                    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                        age--;
+                    }
+                    
+                    document.getElementById('age_edit').value = age >= 0 ? age : 0;
+                }
             });
         </script>
     </body>

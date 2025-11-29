@@ -78,21 +78,6 @@ class Household {
                 ];
             }
 
-            // Check if family_no already exists
-            $checkQuery = "SELECT household_id FROM " . $this->table . " WHERE family_no = ? LIMIT 1";
-            $checkStmt = $this->connection->prepare($checkQuery);
-            $checkStmt->bind_param('i', $family_no);
-            $checkStmt->execute();
-            $checkResult = $checkStmt->get_result();
-            
-            if ($checkResult->num_rows > 0) {
-                return [
-                    'success' => false,
-                    'message' => 'Family No already exists',
-                    'error_type' => 'validation'
-                ];
-            }
-
             $household_id = $this->generateNextId();
 
             $query = "INSERT INTO " . $this->table . " (household_id, family_no, full_name, address, income) VALUES (?, ?, ?, ?, ?)";
@@ -115,6 +100,15 @@ class Household {
                     'household_id' => $household_id
                 ];
             } else {
+                // Check if it's a duplicate entry error
+                if ($this->connection->errno == 1062) {
+                    return [
+                        'success' => false,
+                        'message' => 'Family No already exists',
+                        'error_type' => 'validation'
+                    ];
+                }
+                
                 return [
                     'success' => false,
                     'message' => 'Error creating household: ' . $stmt->error,
@@ -281,12 +275,25 @@ class Household {
             $membersCreated = 0;
             if (!empty($members) && is_array($members)) {
                 require_once __DIR__ . '/Resident.php';
-                $residentModel = new Resident();
+                // Pass the same connection to Resident model to use the same transaction
+                $residentModel = new Resident($this->connection);
 
-                foreach ($members as $member) {
+                foreach ($members as $index => $member) {
                     // Skip empty members
                     if (empty($member['first_name']) || empty($member['last_name'])) {
                         continue;
+                    }
+
+                    // Ensure age is set
+                    if (empty($member['age'])) {
+                        // Calculate age if birth_date is provided
+                        if (!empty($member['birth_date'])) {
+                            $birthDate = new DateTime($member['birth_date']);
+                            $today = new DateTime();
+                            $member['age'] = $today->diff($birthDate)->y;
+                        } else {
+                            $member['age'] = 0;
+                        }
                     }
 
                     $memberData = [
@@ -296,7 +303,7 @@ class Household {
                         'last_name' => $member['last_name'],
                         'birth_date' => $member['birth_date'] ?? null,
                         'gender' => $member['gender'] ?? '',
-                        'age' => $member['age'] ?? 0,
+                        'age' => $member['age'],
                         'contact_no' => $member['contact_no'] ?? '',
                         'email' => $member['email'] ?? ''
                     ];
@@ -305,7 +312,7 @@ class Household {
                     if ($result['success']) {
                         $membersCreated++;
                     } else {
-                        throw new Exception('Error creating member: ' . $result['message']);
+                        throw new Exception('Error creating member ' . ($index + 1) . ': ' . $result['message']);
                     }
                 }
             }
@@ -373,7 +380,8 @@ class Household {
                 throw new Exception($updateResult['message']);
             }
 
-            $residentModel = new Resident();
+            // Pass the same connection to Resident model to use the same transaction
+            $residentModel = new Resident($this->connection);
             $operationsSummary = [
                 'updated' => 0,
                 'added' => 0,
@@ -386,6 +394,8 @@ class Household {
                     $deleteResult = $residentModel->deleteResident($residentId);
                     if ($deleteResult['success']) {
                         $operationsSummary['deleted']++;
+                    } else {
+                        throw new Exception('Error deleting member: ' . $deleteResult['message']);
                     }
                 }
             }
@@ -404,6 +414,8 @@ class Household {
                     );
                     if ($updateResult['success']) {
                         $operationsSummary['updated']++;
+                    } else {
+                        throw new Exception('Error updating member: ' . $updateResult['message']);
                     }
                 }
             }
@@ -422,6 +434,8 @@ class Household {
                     );
                     if ($createResult['success']) {
                         $operationsSummary['added']++;
+                    } else {
+                        throw new Exception('Error adding member: ' . $createResult['message']);
                     }
                 }
             }

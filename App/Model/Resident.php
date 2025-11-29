@@ -10,9 +10,13 @@ class Resident {
     private $connection;
     private $table = 'residents';
 
-    public function __construct() {
-        $database = new Database();
-        $this->connection = $database->connect();
+    public function __construct($existingConnection = null) {
+        if ($existingConnection !== null) {
+            $this->connection = $existingConnection;
+        } else {
+            $database = new Database();
+            $this->connection = $database->connect();
+        }
     }
 
     public function getAll() {
@@ -60,13 +64,18 @@ class Resident {
 
     public function create($data) {
         try {
+            // Log incoming data for debugging
+            error_log('Resident create called with data: ' . json_encode($data));
+            
             // Required fields validation
             $required = ['first_name', 'last_name', 'age', 'household_id'];
             foreach ($required as $f) {
                 if (empty($data[$f])) {
+                    $errorMsg = ucfirst(str_replace('_', ' ', $f)) . ' is required';
+                    error_log('Resident create validation failed: ' . $errorMsg);
                     return [
                         'success' => false,
-                        'message' => ucfirst(str_replace('_', ' ', $f)) . ' is required',
+                        'message' => $errorMsg,
                         'error_type' => 'validation'
                     ];
                 }

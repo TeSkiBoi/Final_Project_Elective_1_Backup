@@ -51,6 +51,8 @@ switch ($action) {
 
 function handleCreate() {
     global $householdModel;
+    
+    error_log('handleCreate called at ' . date('Y-m-d H:i:s'));
 
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         http_response_code(405);
@@ -59,6 +61,7 @@ function handleCreate() {
     }
 
     $data = json_decode(file_get_contents('php://input'), true);
+    error_log('Create data: ' . json_encode($data));
 
     // Required fields: family_no, full_name, address
     if (empty($data['family_no']) || empty($data['full_name']) || empty($data['address'])) {
@@ -73,6 +76,7 @@ function handleCreate() {
     $income = $data['income'] ?? 0.00;
 
     $result = $householdModel->create($family_no, $full_name, $address, $income);
+    error_log('Create result: ' . json_encode($result));
     echo json_encode($result);
     exit;
 }
@@ -136,6 +140,9 @@ function handleUpdateWithMembers() {
 
     $data = json_decode(file_get_contents('php://input'), true);
     
+    // Log request for debugging
+    error_log('UpdateWithMembers request: ' . json_encode($data));
+    
     $household_id = $data['household_id'] ?? null;
     $family_no = $data['family_no'] ?? null;
     $full_name = $data['full_name'] ?? null;
@@ -149,6 +156,10 @@ function handleUpdateWithMembers() {
     }
 
     $result = $householdModel->updateWithMembers($household_id, $family_no, $full_name, $address, $income, $memberOperations);
+    
+    // Log result for debugging
+    error_log('UpdateWithMembers result: ' . json_encode($result));
+    
     echo json_encode($result);
 }
 
@@ -201,6 +212,9 @@ function handleCreateWithMembers() {
 
     $data = json_decode(file_get_contents('php://input'), true);
 
+    // Log request for debugging
+    error_log('CreateWithMembers request: ' . json_encode($data));
+
     // Required fields: family_no, full_name, address
     if (empty($data['family_no']) || empty($data['full_name']) || empty($data['address'])) {
         http_response_code(400);
@@ -215,6 +229,10 @@ function handleCreateWithMembers() {
     $members = $data['members'] ?? [];
 
     $result = $householdModel->createWithMembers($family_no, $full_name, $address, $income, $members);
+    
+    // Log result for debugging
+    error_log('CreateWithMembers result: ' . json_encode($result));
+    
     echo json_encode($result);
     exit;
 }
