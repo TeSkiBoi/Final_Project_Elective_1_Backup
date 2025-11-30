@@ -89,12 +89,16 @@
                                                     <td><?php echo htmlspecialchars($resident['email'] ?? 'N/A'); ?></td>
                                                     <td><?php echo htmlspecialchars($resident['household_id']); ?></td>
                                                     <td>
+                                                        <?php if($roleId == 1): ?>
                                                         <button class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#updateResidentModal">
                                                             <i class="fas fa-edit"></i> Edit
                                                         </button>
                                                         <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteResidentModal">
                                                             <i class="fas fa-trash-alt"></i> Delete
                                                         </button>
+                                                        <?php else: ?>
+                                                        <span class="text-muted"><i class="fas fa-eye"></i> View Only</span>
+                                                        <?php endif; ?>
                                                     </td>
                                                 </tr>
                                             <?php endforeach; ?>

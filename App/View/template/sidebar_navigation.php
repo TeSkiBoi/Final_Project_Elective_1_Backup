@@ -7,14 +7,11 @@
                     <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                     Dashboard
                 </a>
-                <?php if($roleId == 1 || $roleId == 2): ?>
-                    <!--<div class="sb-sidenav-menu-heading">Records</div>
-                    <a class="nav-link" href="students.php">
-                        <div class="sb-nav-link-icon"><i class="fas fa-graduation-cap"></i></div>
-                        Residents
-                    </a>-->
+                
+                <?php if($roleId == 1): ?>
+                    <!-- ADMIN VIEW -->
                     <div class="sb-sidenav-menu-heading">Records</div>
-                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseFeatures2" aria-expanded="false" aria-controls="collapseFeatures">
+                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseFeatures2" aria-expanded="false" aria-controls="collapseFeatures2">
                         <div class="sb-nav-link-icon"><i class="fas fa-th-large"></i></div>
                         Records
                         <div class="sb-sidenav-collapse-arrow"><i class="fas fa-chevron-down"></i></div>
@@ -22,44 +19,28 @@
                     <div class="collapse" id="collapseFeatures2">
                         <nav class="sb-sidenav-menu-nested nav">
                             <a class="nav-link" href="household.php">
-                                <div class="sb-nav-link-icon"><i class="fas fa-file-signature"></i></div>
+                                <div class="sb-nav-link-icon"><i class="fas fa-home"></i></div>
                                 Household
                             </a>
                             <a class="nav-link" href="Resident.php">
-                                <div class="sb-nav-link-icon"><i class="fas fa-graduation-cap"></i></div>
-                                    Resident
+                                <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
+                                Resident
                             </a>
                             <a class="nav-link" href="children.php">
-                                <div class="sb-nav-link-icon"><i class="fas fa-graduation-cap"></i></div>
-                                    Children
+                                <div class="sb-nav-link-icon"><i class="fas fa-child"></i></div>
+                                Children
                             </a>
                             <a class="nav-link" href="senior.php">
                                 <div class="sb-nav-link-icon"><i class="fas fa-user-clock"></i></div>
-                                    Seniors
+                                Seniors
                             </a>
                             <a class="nav-link" href="adult.php">
-                                <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
-                                    Adult
+                                <div class="sb-nav-link-icon"><i class="fas fa-user"></i></div>
+                                Adult
                             </a>
                         </nav>
                     </div>
                     
-                    <!--<a class="nav-link" href="patient.php">
-                        <div class="sb-nav-link-icon"><i class="fas fa-graduation-cap"></i></div>
-                        Seniors
-                    </a>
-                    <a class="nav-link" href="patient.php">
-                        <div class="sb-nav-link-icon"><i class="fas fa-graduation-cap"></i></div>
-                        Adults
-                    </a>
-                    <a class="nav-link" href="patient.php">
-                        <div class="sb-nav-link-icon"><i class="fas fa-graduation-cap"></i></div>
-                        Teenagers
-                    </a>
-                    <a class="nav-link" href="patient.php">
-                        <div class="sb-nav-link-icon"><i class="fas fa-graduation-cap"></i></div>
-                        Children
-                    </a>-->
                     <div class="sb-sidenav-menu-heading">Features</div>
                     <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseFeatures" aria-expanded="false" aria-controls="collapseFeatures">
                         <div class="sb-nav-link-icon"><i class="fas fa-th-large"></i></div>
@@ -89,11 +70,56 @@
                 <?php endif; ?>
 
                 <?php if($roleId == 2): ?>
-                 <div class="sb-sidenav-menu-heading">Other</div>
-                    <a class="nav-link" href="contact.php">
-                        <div class="sb-nav-link-icon"><i class="fas fa-envelope"></i></div>
-                        Contact Us
+                    <!-- STAFF VIEW - View-Only Records, Edit-Enabled Projects & Financial -->
+                    <div class="sb-sidenav-menu-heading">Records (View Only)</div>
+                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseRecordsStaff" aria-expanded="false" aria-controls="collapseRecordsStaff">
+                        <div class="sb-nav-link-icon"><i class="fas fa-th-large"></i></div>
+                        Records
+                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-chevron-down"></i></div>
                     </a>
+                    <div class="collapse" id="collapseRecordsStaff">
+                        <nav class="sb-sidenav-menu-nested nav">
+                            <a class="nav-link" href="household.php">
+                                <div class="sb-nav-link-icon"><i class="fas fa-home"></i></div>
+                                Household
+                            </a>
+                            <a class="nav-link" href="Resident.php">
+                                <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
+                                Resident
+                            </a>
+                            <a class="nav-link" href="children.php">
+                                <div class="sb-nav-link-icon"><i class="fas fa-child"></i></div>
+                                Children
+                            </a>
+                            <a class="nav-link" href="senior.php">
+                                <div class="sb-nav-link-icon"><i class="fas fa-user-clock"></i></div>
+                                Seniors
+                            </a>
+                            <a class="nav-link" href="adult.php">
+                                <div class="sb-nav-link-icon"><i class="fas fa-user"></i></div>
+                                Adult
+                            </a>
+                        </nav>
+                    </div>
+                    
+                    <div class="sb-sidenav-menu-heading">Features</div>
+                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseFeaturesStaff" aria-expanded="false" aria-controls="collapseFeaturesStaff">
+                        <div class="sb-nav-link-icon"><i class="fas fa-th-large"></i></div>
+                        Features
+                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-chevron-down"></i></div>
+                    </a>
+                    <div class="collapse" id="collapseFeaturesStaff">
+                        <nav class="sb-sidenav-menu-nested nav">
+                            <a class="nav-link" href="projects.php">
+                                <div class="sb-nav-link-icon"><i class="fas fa-project-diagram"></i></div>
+                                Barangay Projects
+                            </a>
+                            <a class="nav-link" href="financial.php">
+                                <div class="sb-nav-link-icon"><i class="fas fa-wallet"></i></div>
+                                Financial Management
+                            </a>
+                        </nav>
+                    </div>
                 <?php endif; ?>
 
                 <?php if($roleId == 1): ?>

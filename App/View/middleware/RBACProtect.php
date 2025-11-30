@@ -9,22 +9,26 @@ require_once __DIR__ . '/../../Config/Auth.php';
 /**
  * Define role permissions for pages
  * Format: 'page_name.php' => [allowed_role_ids]
+ * Role IDs: 1=Admin, 2=Staff, 3=Student
  */
 $pagePermissions = [
     // Admin-only pages (role_id 1)
-    
     'role.php' => [1],
     'user.php' => [1],
-    'contact.php' => [2],
+    'barangay_officials.php' => [1],
+    'blotter.php' => [1],
+    'certificate_generator.php' => [1],
     
+    // Admin and Staff pages - VIEW ONLY for Staff (role_id 1, 2)
+    'household.php' => [1, 2],
+    'Resident.php' => [1, 2],
+    'children.php' => [1, 2],
+    'senior.php' => [1, 2],
+    'adult.php' => [1, 2],
     
-    
-    // Admin and Staff pages (role_id 1, 2)
-    'certicate_generator' => [1,2],
-    'household.php' => [1,2],
-    'Resident.php'=> [1,2],
-    'children.php'=> [1,2],
-    'financial.php'=> [1,2],
+    // Admin and Staff pages - EDIT ALLOWED for Staff (role_id 1, 2)
+    'projects.php' => [1, 2],
+    'financial.php' => [1, 2],
     
     // Everyone (all authenticated users)
     'index.php' => [1, 2, 3],

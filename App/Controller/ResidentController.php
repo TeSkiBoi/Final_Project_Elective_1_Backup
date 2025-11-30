@@ -32,6 +32,14 @@ switch ($action) {
 
 function handleCreate() {
     global $residentModel;
+    
+    // Only Admin can create residents
+    if (getCurrentUserRole() != 1) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Access Denied. Only Admin can create residents.']);
+        return;
+    }
+    
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         http_response_code(405);
         echo json_encode(['success' => false, 'message' => 'Method not allowed']);
@@ -52,6 +60,14 @@ function handleCreate() {
 
 function handleUpdate() {
     global $residentModel;
+    
+    // Only Admin can update residents
+    if (getCurrentUserRole() != 1) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Access Denied. Only Admin can update residents.']);
+        return;
+    }
+    
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         http_response_code(405);
         echo json_encode(['success' => false, 'message' => 'Method not allowed']);
@@ -73,6 +89,14 @@ function handleUpdate() {
 
 function handleDelete() {
     global $residentModel;
+    
+    // Only Admin can delete residents
+    if (getCurrentUserRole() != 1) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Access Denied. Only Admin can delete residents.']);
+        return;
+    }
+    
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         http_response_code(405);
         echo json_encode(['success' => false, 'message' => 'Method not allowed']);

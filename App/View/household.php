@@ -35,11 +35,13 @@
                                         <li class="breadcrumb-item active">Households</li>
                                     </ol>
                                 </div>
+                                <?php if($roleId == 1): ?>
                                 <div>
                                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createHouseholdModal">
                                         <i class="fas fa-plus"></i> Add New Household
                                     </button>
                                 </div>
+                                <?php endif; ?>
                             </div>
                         <div class="card mb-4">
                             <div class="card-header d-flex justify-content-between align-items-center">
@@ -76,12 +78,14 @@
                                                                 title="View Members">
                                                             <i class="fas fa-eye"></i> View
                                                         </button>
+                                                        <?php if($roleId == 1): ?>
                                                         <button class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#updateHouseholdModal">
                                                             <i class="fas fa-edit"></i> Edit
                                                         </button>
                                                         <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteHouseholdModal">
                                                             <i class="fas fa-trash-alt"></i> Delete
                                                         </button>
+                                                        <?php endif; ?>
                                                     </td>
                                                 </tr>
                                             <?php endforeach; ?>
@@ -165,12 +169,12 @@
                                     <input type="number" id="family_no_edit" name="family_no" class="form-control" required placeholder="e.g., 1">
                                 </div>
                             </div>
-                            <div class="mb-3">
-                                <label for="household_head_edit" class="form-label">Household Head <span class="text-danger">*</span></label>
-                                <select id="household_head_edit" name="household_head" class="form-select" required>
+                            <div class="mb-3" id="householdHeadSection">
+                                <label for="household_head_edit" class="form-label">Household Head <span class="text-danger" id="headRequiredMark">*</span></label>
+                                <select id="household_head_edit" name="household_head" class="form-select">
                                     <option value="">-- Select Household Head --</option>
                                 </select>
-                                <div class="form-text">Add members below, then select who will be the household head.</div>
+                                <div class="form-text" id="headHelpText">Add members below. The first member will automatically become the household head.</div>
                             </div>
                             <div class="row">
                                 <div class="col-md-8 mb-3">
@@ -199,6 +203,16 @@
                                         <span class="visually-hidden">Loading members...</span>
                                     </div>
                                 </div>
+                            </div>
+                            
+                            <!-- Save Members Button (shown when there are new members) -->
+                            <div class="text-center mt-3" id="saveMembersSection" style="display: none;">
+                                <button type="button" class="btn btn-info" id="saveMembersBtn">
+                                    <i class="fas fa-user-check me-2"></i>Save Members First
+                                </button>
+                                <p class="text-muted small mt-2 mb-0">
+                                    <i class="fas fa-info-circle me-1"></i>Save new members to register them before selecting household head
+                                </p>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -256,6 +270,77 @@
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
+                        <!-- Household Info Display -->
+                        <div class="alert alert-info mb-3" id="householdInfoDisplay">
+                            <strong>Household ID:</strong> <span id="displayHouseholdId"></span> | 
+                            <strong>Current Head:</strong> <span id="displayHouseholdHead">Loading...</span> | 
+                            <strong>Total Members:</strong> <span id="displayMemberCount">0</span>
+                        </div>
+
+                        <!-- Add Resident Form (Collapsible) -->
+                        <?php if($roleId == 1): ?>
+                        <div class="card mb-3">
+                            <div class="card-header bg-success text-white">
+                                <button class="btn btn-sm btn-light" type="button" data-bs-toggle="collapse" data-bs-target="#addResidentForm" aria-expanded="false">
+                                    <i class="fas fa-user-plus me-2"></i>Add New Member
+                                </button>
+                            </div>
+                            <div class="collapse" id="addResidentForm">
+                                <div class="card-body">
+                                    <form id="quickAddResidentForm">
+                                        <input type="hidden" id="addResident_household_id" name="household_id">
+                                        <div class="row">
+                                            <div class="col-md-4 mb-2">
+                                                <label class="form-label">First Name <span class="text-danger">*</span></label>
+                                                <input type="text" id="addResident_first_name" name="first_name" class="form-control form-control-sm" required>
+                                            </div>
+                                            <div class="col-md-4 mb-2">
+                                                <label class="form-label">Middle Name</label>
+                                                <input type="text" id="addResident_middle_name" name="middle_name" class="form-control form-control-sm">
+                                            </div>
+                                            <div class="col-md-4 mb-2">
+                                                <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                                                <input type="text" id="addResident_last_name" name="last_name" class="form-control form-control-sm" required>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-3 mb-2">
+                                                <label class="form-label">Birth Date <span class="text-danger">*</span></label>
+                                                <input type="date" id="addResident_birth_date" name="birth_date" class="form-control form-control-sm" required>
+                                            </div>
+                                            <div class="col-md-2 mb-2">
+                                                <label class="form-label">Age</label>
+                                                <input type="number" id="addResident_age" name="age" class="form-control form-control-sm" readonly>
+                                            </div>
+                                            <div class="col-md-2 mb-2">
+                                                <label class="form-label">Gender <span class="text-danger">*</span></label>
+                                                <select id="addResident_gender" name="gender" class="form-select form-select-sm" required>
+                                                    <option value="">Select</option>
+                                                    <option value="Male">Male</option>
+                                                    <option value="Female">Female</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3 mb-2">
+                                                <label class="form-label">Contact No</label>
+                                                <input type="text" id="addResident_contact_no" name="contact_no" class="form-control form-control-sm">
+                                            </div>
+                                            <div class="col-md-2 mb-2">
+                                                <label class="form-label">Email</label>
+                                                <input type="email" id="addResident_email" name="email" class="form-control form-control-sm">
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            <i class="fas fa-plus me-2"></i>Add Member
+                                        </button>
+                                        <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#addResidentForm">
+                                            Cancel
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+
                         <div id="membersLoadingSpinner" class="text-center py-5">
                             <div class="spinner-border text-primary" role="status">
                                 <span class="visually-hidden">Loading...</span>
@@ -275,6 +360,9 @@
                                             <th>Gender</th>
                                             <th>Contact No</th>
                                             <th>Email</th>
+                                            <?php if($roleId == 1): ?>
+                                            <th>Action</th>
+                                            <?php endif; ?>
                                         </tr>
                                     </thead>
                                     <tbody id="membersTableBody">
@@ -283,7 +371,7 @@
                                 </table>
                             </div>
                             <div id="noMembersMessage" class="alert alert-info" style="display: none;">
-                                <i class="fas fa-info-circle me-2"></i>No members found for this household.
+                                <i class="fas fa-info-circle me-2"></i>No members found for this household. Add the first member above!
                             </div>
                         </div>
                     </div>
@@ -324,6 +412,264 @@
                 
                 return age >= 0 ? age : 0;
             }
+
+            /**
+             * Update Household Head Dropdown
+             * Only existing members (with resident_id) can be household head
+             * New members must be saved first before they can become head
+             */
+            function updateHouseholdHeadDropdown() {
+                const headDropdown = document.getElementById('household_head_edit');
+                const headSection = document.getElementById('householdHeadSection');
+                const headHelpText = document.getElementById('headHelpText');
+                const headRequiredMark = document.getElementById('headRequiredMark');
+                const container = document.getElementById('membersContainerEdit');
+                
+                // Get only EXISTING members (not deleted ones) - they have resident_ids
+                const existingMembers = container.querySelectorAll('.member-form[data-member-type="existing"]:not([data-deleted="true"])');
+                const newMembers = container.querySelectorAll('.member-form[data-member-type="new"]');
+                const totalExistingMembers = existingMembers.length;
+                const totalNewMembers = newMembers.length;
+                
+                // Store current selection
+                const currentSelection = headDropdown.value;
+                
+                // Clear and rebuild dropdown
+                headDropdown.innerHTML = '<option value="">-- Select Household Head --</option>';
+                
+                // Collect existing member data for dropdown (only these can be heads)
+                const memberOptions = [];
+                
+                // Add existing members only
+                existingMembers.forEach(member => {
+                    const residentId = member.getAttribute('data-resident-id');
+                    const firstName = member.querySelector('[name="existing_member_first_name[]"]')?.value || '';
+                    const middleName = member.querySelector('[name="existing_member_middle_name[]"]')?.value || '';
+                    const lastName = member.querySelector('[name="existing_member_last_name[]"]')?.value || '';
+                    const fullName = `${firstName} ${middleName ? middleName + ' ' : ''}${lastName}`.trim();
+                    
+                    if (residentId && fullName) {
+                        memberOptions.push({ id: residentId, name: fullName });
+                    }
+                });
+                
+                // Populate dropdown with existing members
+                memberOptions.forEach(option => {
+                    const optionElement = document.createElement('option');
+                    optionElement.value = option.id;
+                    optionElement.textContent = option.name;
+                    headDropdown.appendChild(optionElement);
+                });
+                
+                // Handle different scenarios
+                if (totalExistingMembers === 0 && totalNewMembers === 0) {
+                    // No members at all - show "No members yet"
+                    headSection.style.display = 'block';
+                    headDropdown.innerHTML = '<option value="">-- No members yet --</option>';
+                    headDropdown.removeAttribute('required');
+                    headDropdown.disabled = true;
+                    headRequiredMark.style.display = 'none';
+                    headHelpText.innerHTML = '<span class="text-muted"><i class="fas fa-info-circle me-1"></i>Add members below. Save the household to make them eligible as household head.</span>';
+                    headDropdown.value = '';
+                } else if (totalExistingMembers === 0 && totalNewMembers > 0) {
+                    // Only new members (not saved yet) - show "No members yet"
+                    headSection.style.display = 'block';
+                    headDropdown.innerHTML = '<option value="">-- No members yet --</option>';
+                    headDropdown.removeAttribute('required');
+                    headDropdown.disabled = true;
+                    headRequiredMark.style.display = 'none';
+                    headHelpText.innerHTML = '<span class="text-warning"><i class="fas fa-exclamation-triangle me-1"></i>Save the household first to register new members, then they can be selected as household head.</span>';
+                    headDropdown.value = '';
+                } else if (totalExistingMembers === 1) {
+                    // Single existing member - auto-select
+                    headSection.style.display = 'block';
+                    headDropdown.removeAttribute('required');
+                    headDropdown.disabled = true;
+                    headRequiredMark.style.display = 'none';
+                    
+                    // Auto-select the only member
+                    if (memberOptions.length > 0) {
+                        headDropdown.value = memberOptions[0].id;
+                    }
+                    
+                    if (totalNewMembers > 0) {
+                        headHelpText.innerHTML = '<span class="text-success"><i class="fas fa-check-circle me-1"></i>This member is automatically set as household head. New members will be eligible after saving.</span>';
+                    } else {
+                        headHelpText.innerHTML = '<span class="text-success"><i class="fas fa-check-circle me-1"></i>This member is automatically set as household head.</span>';
+                    }
+                } else {
+                    // Multiple existing members - enable selection
+                    headSection.style.display = 'block';
+                    headDropdown.setAttribute('required', 'required');
+                    headDropdown.disabled = false;
+                    headRequiredMark.style.display = 'inline';
+                    
+                    // Try to restore previous selection if still valid
+                    if (currentSelection && memberOptions.some(opt => opt.id === currentSelection)) {
+                        headDropdown.value = currentSelection;
+                    }
+                    
+                    if (totalNewMembers > 0) {
+                        headHelpText.innerHTML = '<span class="text-primary"><i class="fas fa-info-circle me-1"></i>Select household head from existing members. New members will be eligible after saving.</span>';
+                    } else {
+                        headHelpText.innerHTML = '<span class="text-primary"><i class="fas fa-info-circle me-1"></i>Select who will be the household head from the members below.</span>';
+                    }
+                }
+                
+                // Show/hide "Save Members First" button
+                const saveMembersSection = document.getElementById('saveMembersSection');
+                if (totalNewMembers > 0) {
+                    saveMembersSection.style.display = 'block';
+                } else {
+                    saveMembersSection.style.display = 'none';
+                }
+            }
+
+            /**
+             * Save Members First Button Handler
+             * Saves new members and reloads the form to make them eligible as household head
+             */
+            document.getElementById('saveMembersBtn').addEventListener('click', async function() {
+                const householdId = document.getElementById('household_id_edit').value;
+                const family_no = document.getElementById('family_no_edit').value.trim();
+                const address = document.getElementById('address_edit').value.trim();
+                const income = document.getElementById('income_edit').value;
+                const household_head_id = document.getElementById('household_head_edit').value;
+
+                if (!family_no || !address) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Validation Error',
+                        text: 'Please fill Family No and Address before saving members.',
+                        confirmButtonColor: '#6ec207'
+                    });
+                    return;
+                }
+
+                // Collect only NEW members to add
+                const memberOperations = {
+                    add: [],
+                    update: [],
+                    delete: []
+                };
+
+                const newMembers = document.querySelectorAll('.member-form[data-member-type="new"]');
+                let hasIncompleteMember = false;
+                
+                newMembers.forEach(form => {
+                    const firstName = form.querySelector('input[name="member_first_name_edit[]"]')?.value.trim();
+                    const lastName = form.querySelector('input[name="member_last_name_edit[]"]')?.value.trim();
+                    const birthDate = form.querySelector('input[name="member_birth_date_edit[]"]')?.value;
+                    const gender = form.querySelector('select[name="member_gender_edit[]"]')?.value;
+                    
+                    if (!firstName || !lastName || !birthDate || !gender) {
+                        hasIncompleteMember = true;
+                    } else {
+                        const middleName = form.querySelector('input[name="member_middle_name_edit[]"]')?.value.trim();
+                        const contact = form.querySelector('input[name="member_contact_edit[]"]')?.value.trim();
+                        const email = form.querySelector('input[name="member_email_edit[]"]')?.value.trim();
+                        const age = form.querySelector('input[name="member_age_edit[]"]')?.value;
+
+                        memberOperations.add.push({
+                            first_name: firstName,
+                            middle_name: middleName || '',
+                            last_name: lastName,
+                            birth_date: birthDate,
+                            gender: gender,
+                            age: age ? parseInt(age) : calculateAge(birthDate),
+                            contact_no: contact || '',
+                            email: email || ''
+                        });
+                    }
+                });
+
+                if (hasIncompleteMember) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Incomplete Member Data',
+                        text: 'Please complete all required fields (First Name, Last Name, Birth Date, Gender) for all new members.',
+                        confirmButtonColor: '#6ec207'
+                    });
+                    return;
+                }
+
+                if (memberOperations.add.length === 0) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'No New Members',
+                        text: 'There are no new members to save.',
+                        confirmButtonColor: '#6ec207'
+                    });
+                    return;
+                }
+
+                const btn = this;
+                const originalText = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving Members...';
+
+                try {
+                    const response = await fetch(API_URL + '?action=updateWithMembers', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            household_id: householdId,
+                            family_no: parseInt(family_no),
+                            household_head_id: household_head_id || null,
+                            address: address,
+                            income: income ? parseFloat(income) : 0.00,
+                            memberOperations: memberOperations
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        await Swal.fire({
+                            icon: 'success',
+                            title: 'Members Saved!',
+                            text: 'New members have been registered. You can now select them as household head.',
+                            confirmButtonColor: '#6ec207',
+                            timer: 2000,
+                            timerProgressBar: true
+                        });
+
+                        // Reload members to get their new resident IDs
+                        await loadExistingMembers(householdId);
+                        
+                        // Fetch and restore household head if it was set
+                        try {
+                            const householdResponse = await fetch(API_URL + `?action=getById&id=${householdId}`);
+                            const householdResult = await householdResponse.json();
+                            if (householdResult.success && householdResult.data.household_head_id) {
+                                document.getElementById('household_head_edit').value = householdResult.data.household_head_id;
+                            }
+                        } catch (error) {
+                            console.error('Error fetching household head:', error);
+                        }
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Save Failed',
+                            text: result.message || 'Failed to save members.',
+                            confirmButtonColor: '#dc3545'
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error saving members:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to connect to the server.',
+                        confirmButtonColor: '#dc3545'
+                    });
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            });
 
             /**
              * Add Member Form Fields (Edit Modal)
@@ -381,6 +727,9 @@
                     </div>
                 `;
                 document.getElementById('membersContainerEdit').insertAdjacentHTML('beforeend', memberHtml);
+                
+                // Update household head dropdown
+                updateHouseholdHeadDropdown();
             });
 
             /**
@@ -416,6 +765,9 @@
                             // Just remove new members
                             memberForm.remove();
                         }
+                        
+                        // Update household head dropdown after removal
+                        updateHouseholdHeadDropdown();
                     }
                 }
             });
@@ -432,8 +784,9 @@
                 loading.style.display = 'block';
                 container.innerHTML = '<div class="text-center py-3" id="loadingMembersEdit"><div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading members...</span></div></div>';
                 
-                // Reset dropdown
-                headDropdown.innerHTML = '<option value="">-- Select Household Head --</option>';
+                // Reset dropdown to show "No members yet"
+                headDropdown.innerHTML = '<option value="">-- No members yet --</option>';
+                headDropdown.disabled = true;
                 
                 try {
                     const response = await fetch(API_URL + `?action=getMembers&household_id=${householdId}`);
@@ -443,6 +796,10 @@
                     container.innerHTML = '';
                     
                     if (result.success && result.data && result.data.length > 0) {
+                        // Reset dropdown to normal state
+                        headDropdown.innerHTML = '<option value="">-- Select Household Head --</option>';
+                        headDropdown.disabled = false;
+                        
                         // Populate household head dropdown
                         result.data.forEach(member => {
                             const fullName = `${member.first_name} ${member.middle_name ? member.middle_name + ' ' : ''}${member.last_name}`;
@@ -509,6 +866,9 @@
                     } else {
                         container.innerHTML = '<div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>No members found. Click "Add Member" to add new members.</div>';
                     }
+                    
+                    // Update household head dropdown based on loaded members
+                    updateHouseholdHeadDropdown();
                 } catch (error) {
                     console.error('Error loading members:', error);
                     container.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>Failed to load members.</div>';
@@ -517,6 +877,7 @@
 
             /**
              * Auto-calculate age when birth date changes (using event delegation)
+             * Also update household head dropdown when names change
              */
             document.addEventListener('change', function(e) {
                 if (e.target.classList.contains('birth-date-input')) {
@@ -531,6 +892,11 @@
                             }
                         }
                     }
+                }
+                
+                // Update household head dropdown when member names change
+                if (e.target.name && (e.target.name.includes('first_name') || e.target.name.includes('middle_name') || e.target.name.includes('last_name'))) {
+                    updateHouseholdHeadDropdown();
                 }
             });
 
@@ -661,11 +1027,26 @@
                     return;
                 }
 
-                if (!family_no || !household_head_id || !address) {
+                // Check if we have any existing members
+                const existingMemberForms = document.querySelectorAll('.member-form[data-member-type="existing"]:not([data-deleted="true"])');
+                const hasExistingMembers = existingMemberForms.length > 0;
+
+                if (!family_no || !address) {
                     Swal.fire({
                         icon: 'warning',
                         title: 'Validation Error',
-                        text: 'Please fill all required fields (Family No, Household Head, and Address).',
+                        text: 'Please fill all required fields (Family No and Address).',
+                        confirmButtonColor: '#6ec207'
+                    });
+                    return;
+                }
+                
+                // Only require household head if there are existing members
+                if (hasExistingMembers && !household_head_id) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Validation Error',
+                        text: 'Please select a household head from the existing members.',
                         confirmButtonColor: '#6ec207'
                     });
                     return;
@@ -910,6 +1291,10 @@
                     document.getElementById('address_edit').value = address;
                     document.getElementById('income_edit').value = parseFloat(income.replace(/,/g, ''));
                     
+                    // Clear members container and reset counter before loading
+                    document.getElementById('membersContainerEdit').innerHTML = '<div class="text-center py-3" id="loadingMembersEdit"><div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading members...</span></div></div>';
+                    editMemberCount = 0;
+                    
                     // Load existing members (will populate dropdown)
                     await loadExistingMembers(householdId);
                     
@@ -953,44 +1338,89 @@
             });
 
             /**
-             * Handle View Members Button Click
+             * Handle View Members Button Click - Load members and household info
              */
+            let currentViewingHouseholdId = null; // Track current household
+            
             document.addEventListener('click', async function(e) {
                 if (e.target.closest('.view-members-btn')) {
                     const btn = e.target.closest('.view-members-btn');
                     const householdId = btn.getAttribute('data-household-id');
                     const householdName = btn.getAttribute('data-household-name');
+                    
+                    currentViewingHouseholdId = householdId;
 
-                    // Set modal title
+                    // Set modal title and household ID
                     document.getElementById('modalHouseholdName').textContent = householdName;
+                    document.getElementById('displayHouseholdId').textContent = householdId;
+                    document.getElementById('addResident_household_id').value = householdId;
 
                     // Show modal
                     const modal = new bootstrap.Modal(document.getElementById('viewMembersModal'));
                     modal.show();
 
-                    // Show loading state
-                    document.getElementById('membersLoadingSpinner').style.display = 'block';
-                    document.getElementById('membersContent').style.display = 'none';
+                    // Load members data
+                    await refreshMembersList(householdId);
+                }
+            });
 
-                    try {
-                        const response = await fetch(API_URL + `?action=getMembers&household_id=${householdId}`);
-                        const result = await response.json();
+            /**
+             * Refresh members list without page reload (AJAX)
+             */
+            async function refreshMembersList(householdId) {
+                // Show loading state
+                document.getElementById('membersLoadingSpinner').style.display = 'block';
+                document.getElementById('membersContent').style.display = 'none';
 
-                        if (result.success && result.data && result.data.length > 0) {
-                            // Populate members table
-                            const tbody = document.getElementById('membersTableBody');
-                            tbody.innerHTML = '';
+                try {
+                    const response = await fetch(API_URL + `?action=getMembersWithHead&household_id=${householdId}`);
+                    const result = await response.json();
 
-                            result.data.forEach(member => {
+                    if (result.success) {
+                        const members = result.members || [];
+                        const household = result.household || {};
+                        const householdHeadId = result.household_head_id;
+
+                        // Update household info display
+                        document.getElementById('displayMemberCount').textContent = members.length;
+                        
+                        // Find and display household head name
+                        let headName = 'Not Set';
+                        if (householdHeadId && members.length > 0) {
+                            const head = members.find(m => m.resident_id === householdHeadId);
+                            if (head) {
+                                headName = `${head.first_name} ${head.middle_name || ''} ${head.last_name}`.trim();
+                            }
+                        }
+                        document.getElementById('displayHouseholdHead').textContent = headName;
+
+                        // Populate members table
+                        const tbody = document.getElementById('membersTableBody');
+                        tbody.innerHTML = '';
+
+                        if (members.length > 0) {
+                            members.forEach(member => {
+                                const isHead = member.resident_id === householdHeadId;
+                                const headBadge = isHead ? '<span class="badge bg-primary ms-2">Head</span>' : '';
+                                
                                 const row = `
-                                    <tr>
+                                    <tr ${isHead ? 'class="table-primary"' : ''}>
                                         <td>${member.resident_id}</td>
-                                        <td>${member.first_name} ${member.middle_name || ''} ${member.last_name}</td>
+                                        <td>${member.first_name} ${member.middle_name || ''} ${member.last_name}${headBadge}</td>
                                         <td>${member.birth_date}</td>
                                         <td>${member.age || 'N/A'}</td>
                                         <td>${member.gender}</td>
                                         <td>${member.contact_no || 'N/A'}</td>
                                         <td>${member.email || 'N/A'}</td>
+                                        <?php if($roleId == 1): ?>
+                                        <td>
+                                            <button class="btn btn-sm btn-danger delete-resident-btn" 
+                                                    data-resident-id="${member.resident_id}"
+                                                    data-household-id="${householdId}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                        <?php endif; ?>
                                     </tr>
                                 `;
                                 tbody.insertAdjacentHTML('beforeend', row);
@@ -1007,16 +1437,224 @@
                         document.getElementById('membersLoadingSpinner').style.display = 'none';
                         document.getElementById('membersContent').style.display = 'block';
 
+                    } else {
+                        throw new Error(result.message || 'Failed to load members');
+                    }
+                } catch (error) {
+                    console.error('Error loading members:', error);
+                    document.getElementById('membersLoadingSpinner').style.display = 'none';
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to load household members.',
+                        confirmButtonColor: '#dc3545'
+                    });
+                }
+            }
+
+            /**
+             * Auto-calculate age when birth date changes (Add Resident Form)
+             */
+            document.getElementById('addResident_birth_date').addEventListener('change', function() {
+                const birthDate = this.value;
+                if (birthDate) {
+                    document.getElementById('addResident_age').value = calculateAge(birthDate);
+                }
+            });
+
+            /**
+             * Handle Add Resident Form Submission - WITH AUTO HEAD ASSIGNMENT
+             */
+            document.getElementById('quickAddResidentForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const householdId = document.getElementById('addResident_household_id').value;
+                const formData = {
+                    household_id: householdId,
+                    first_name: document.getElementById('addResident_first_name').value.trim(),
+                    middle_name: document.getElementById('addResident_middle_name').value.trim(),
+                    last_name: document.getElementById('addResident_last_name').value.trim(),
+                    birth_date: document.getElementById('addResident_birth_date').value,
+                    age: parseInt(document.getElementById('addResident_age').value),
+                    gender: document.getElementById('addResident_gender').value,
+                    contact_no: document.getElementById('addResident_contact_no').value.trim(),
+                    email: document.getElementById('addResident_email').value.trim()
+                };
+
+                // Validation
+                if (!formData.first_name || !formData.last_name || !formData.birth_date || !formData.gender) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Validation Error',
+                        text: 'Please fill all required fields.',
+                        confirmButtonColor: '#6ec207'
+                    });
+                    return;
+                }
+
+                try {
+                    // Show loading indicator
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Adding...';
+
+                    // Step 1: Insert resident
+                    const response = await fetch(API_URL + '?action=addResident', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // Show success with auto-assignment info
+                        let message = result.message;
+                        if (result.head_assignment) {
+                            if (result.head_assignment.member_count === 1) {
+                                message += ' This resident has been automatically assigned as household head.';
+                            } else if (result.head_assignment.household_head_id) {
+                                message += ` Household head: ${result.head_assignment.household_head_id}`;
+                            }
+                        }
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: message,
+                            confirmButtonColor: '#6ec207',
+                            timer: 3000
+                        });
+
+                        // Step 2: Refresh members list (AJAX - no page reload)
+                        await refreshMembersList(householdId);
+
+                        // Reset form and collapse it
+                        this.reset();
+                        const collapseElement = document.getElementById('addResidentForm');
+                        const bsCollapse = bootstrap.Collapse.getInstance(collapseElement);
+                        if (bsCollapse) bsCollapse.hide();
+
+                        // Also refresh the main household table row to show updated head
+                        // Find the row and update the household head name
+                        const mainTable = document.querySelector('table tbody');
+                        if (mainTable) {
+                            const rows = mainTable.querySelectorAll('tr');
+                            rows.forEach(row => {
+                                const firstCell = row.querySelector('td:first-child');
+                                if (firstCell && firstCell.textContent === householdId) {
+                                    const headCell = row.querySelector('td:nth-child(3)');
+                                    if (headCell && result.household && result.household.household_head_name) {
+                                        headCell.textContent = result.household.household_head_name;
+                                    }
+                                }
+                            });
+                        }
+
+                    } else {
+                        throw new Error(result.message || 'Failed to add resident');
+                    }
+
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+
+                } catch (error) {
+                    console.error('Error adding resident:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: error.message || 'Failed to add resident.',
+                        confirmButtonColor: '#dc3545'
+                    });
+                }
+            });
+
+            /**
+             * Handle Delete Resident Button Click - WITH AUTO HEAD REASSIGNMENT
+             */
+            document.addEventListener('click', async function(e) {
+                if (e.target.closest('.delete-resident-btn')) {
+                    const btn = e.target.closest('.delete-resident-btn');
+                    const residentId = btn.getAttribute('data-resident-id');
+                    const householdId = btn.getAttribute('data-household-id');
+
+                    // Confirm deletion
+                    const confirmResult = await Swal.fire({
+                        icon: 'warning',
+                        title: 'Delete Resident?',
+                        text: 'This action cannot be undone. If this resident is the household head, a new head will be automatically assigned.',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, delete',
+                        cancelButtonText: 'Cancel'
+                    });
+
+                    if (!confirmResult.isConfirmed) return;
+
+                    try {
+                        // Delete resident
+                        const response = await fetch(API_URL + '?action=deleteResident', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                resident_id: residentId,
+                                household_id: householdId
+                            })
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            // Show success with reassignment info
+                            let message = result.message;
+                            if (result.head_assignment) {
+                                if (result.head_assignment.member_count === 0) {
+                                    message += ' No members remain in household.';
+                                } else if (result.head_assignment.household_head_id) {
+                                    message += ' Household head has been reassigned.';
+                                }
+                            }
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted!',
+                                text: message,
+                                confirmButtonColor: '#6ec207',
+                                timer: 3000
+                            });
+
+                            // Refresh members list (AJAX - no page reload)
+                            await refreshMembersList(householdId);
+
+                            // Update main household table
+                            const mainTable = document.querySelector('table tbody');
+                            if (mainTable) {
+                                const rows = mainTable.querySelectorAll('tr');
+                                rows.forEach(row => {
+                                    const firstCell = row.querySelector('td:first-child');
+                                    if (firstCell && firstCell.textContent === householdId) {
+                                        const headCell = row.querySelector('td:nth-child(3)');
+                                        if (headCell && result.household) {
+                                            headCell.textContent = result.household.household_head_name || 'Not Set';
+                                        }
+                                    }
+                                });
+                            }
+
+                        } else {
+                            throw new Error(result.message || 'Failed to delete resident');
+                        }
+
                     } catch (error) {
-                        console.error('Error:', error);
-                        document.getElementById('membersLoadingSpinner').style.display = 'none';
+                        console.error('Error deleting resident:', error);
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
-                            text: 'Failed to load household members.',
+                            text: error.message || 'Failed to delete resident.',
                             confirmButtonColor: '#dc3545'
                         });
-                        modal.hide();
                     }
                 }
             });
@@ -1027,6 +1665,8 @@
             document.getElementById('viewMembersModal').addEventListener('hide.bs.modal', function() {
                 document.getElementById('membersTableBody').innerHTML = '';
                 document.getElementById('noMembersMessage').style.display = 'none';
+                document.getElementById('quickAddResidentForm').reset();
+                currentViewingHouseholdId = null;
             });
         </script>
     </body>

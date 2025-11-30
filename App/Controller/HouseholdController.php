@@ -43,6 +43,15 @@ switch ($action) {
     case 'getMembers':
         handleGetMembers();
         break;
+    case 'addResident':
+        handleAddResident();
+        break;
+    case 'deleteResident':
+        handleDeleteResident();
+        break;
+    case 'getMembersWithHead':
+        handleGetMembersWithHead();
+        break;
     default:
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'Invalid action']);
@@ -51,6 +60,13 @@ switch ($action) {
 
 function handleCreate() {
     global $householdModel;
+    
+    // Only Admin can create households
+    if (getCurrentUserRole() != 1) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Access Denied. Only Admin can create households.']);
+        return;
+    }
     
     error_log('handleCreate called at ' . date('Y-m-d H:i:s'));
 
@@ -82,6 +98,13 @@ function handleCreate() {
 
 function handleUpdate() {
     global $householdModel;
+    
+    // Only Admin can update households
+    if (getCurrentUserRole() != 1) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Access Denied. Only Admin can update households.']);
+        return;
+    }
 
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         http_response_code(405);
@@ -110,6 +133,13 @@ function handleUpdate() {
 
 function handleDelete() {
     global $householdModel;
+    
+    // Only Admin can delete households
+    if (getCurrentUserRole() != 1) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Access Denied. Only Admin can delete households.']);
+        return;
+    }
 
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         http_response_code(405);
@@ -131,6 +161,13 @@ function handleDelete() {
 
 function handleUpdateWithMembers() {
     global $householdModel;
+    
+    // Only Admin can update households
+    if (getCurrentUserRole() != 1) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Access Denied. Only Admin can update households.']);
+        return;
+    }
     
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         echo json_encode(['success' => false, 'message' => 'Invalid request method']);
@@ -202,6 +239,13 @@ function handleGetById() {
 
 function handleCreateWithMembers() {
     global $householdModel;
+    
+    // Only Admin can create households
+    if (getCurrentUserRole() != 1) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Access Denied. Only Admin can create households.']);
+        return;
+    }
 
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         http_response_code(405);
@@ -253,6 +297,144 @@ function handleGetMembers() {
     $household_id = $_GET['household_id'];
     $members = $householdModel->getMembers($household_id);
     echo json_encode(['success' => true, 'data' => $members]);
+}
+
+function handleAddResident() {
+    global $householdModel;
+    
+    // Only Admin can add residents
+    if (getCurrentUserRole() != 1) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Access Denied. Only Admin can add residents.']);
+        return;
+    }
+    
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
+        echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+        return;
+    }
+    
+    $data = json_decode(file_get_contents('php://input'), true);
+    error_log('AddResident request: ' . json_encode($data));
+    
+    if (empty($data['household_id'])) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Household ID is required']);
+        return;
+    }
+    
+    require_once __DIR__ . '/../Model/Resident.php';
+    $residentModel = new Resident();
+    
+    // Create the resident
+    $residentResult = $residentModel->create($data);
+    
+    if (!$residentResult['success']) {
+        echo json_encode($residentResult);
+        return;
+    }
+    
+    // Auto-assign household head based on member count
+    $household_id = $data['household_id'];
+    $headAssignResult = $householdModel->autoAssignHouseholdHead($household_id);
+    
+    // Fetch updated members list
+    $members = $householdModel->getMembers($household_id);
+    
+    // Get updated household info
+    $household = $householdModel->getById($household_id);
+    
+    echo json_encode([
+        'success' => true,
+        'message' => $residentResult['message'],
+        'resident_id' => $residentResult['resident_id'],
+        'members' => $members,
+        'household' => $household,
+        'head_assignment' => $headAssignResult
+    ]);
+}
+
+function handleDeleteResident() {
+    global $householdModel;
+    
+    // Only Admin can delete residents
+    if (getCurrentUserRole() != 1) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Access Denied. Only Admin can delete residents.']);
+        return;
+    }
+    
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
+        echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+        return;
+    }
+    
+    $data = json_decode(file_get_contents('php://input'), true);
+    error_log('DeleteResident request: ' . json_encode($data));
+    
+    if (empty($data['resident_id']) || empty($data['household_id'])) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Resident ID and Household ID are required']);
+        return;
+    }
+    
+    require_once __DIR__ . '/../Model/Resident.php';
+    $residentModel = new Resident();
+    
+    // Delete the resident
+    $deleteResult = $residentModel->delete($data['resident_id']);
+    
+    if (!$deleteResult['success']) {
+        echo json_encode($deleteResult);
+        return;
+    }
+    
+    // Auto-reassign household head (if deleted resident was head, reassign to next)
+    $household_id = $data['household_id'];
+    $headAssignResult = $householdModel->autoAssignHouseholdHead($household_id);
+    
+    // Fetch updated members list
+    $members = $householdModel->getMembers($household_id);
+    
+    // Get updated household info
+    $household = $householdModel->getById($household_id);
+    
+    echo json_encode([
+        'success' => true,
+        'message' => $deleteResult['message'],
+        'members' => $members,
+        'household' => $household,
+        'head_assignment' => $headAssignResult
+    ]);
+}
+
+function handleGetMembersWithHead() {
+    global $householdModel;
+    
+    if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+        http_response_code(405);
+        echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+        return;
+    }
+    
+    if (empty($_GET['household_id'])) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Household ID is required']);
+        return;
+    }
+    
+    $household_id = $_GET['household_id'];
+    $members = $householdModel->getMembers($household_id);
+    $household = $householdModel->getById($household_id);
+    
+    echo json_encode([
+        'success' => true,
+        'members' => $members,
+        'household' => $household,
+        'household_head_id' => $household['household_head_id'] ?? null
+    ]);
 }
 
 ?>

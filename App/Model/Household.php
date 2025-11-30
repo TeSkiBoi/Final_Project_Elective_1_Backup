@@ -203,10 +203,38 @@ class Household {
      */
     public function delete($household_id) {
         try {
+            // Start transaction to ensure atomicity
+            $this->connection->begin_transaction();
+            
+            // Step 1: Set household_head_id to NULL first to avoid circular foreign key constraint
+            $nullHeadQuery = "UPDATE " . $this->table . " SET household_head_id = NULL WHERE household_id = ?";
+            $nullStmt = $this->connection->prepare($nullHeadQuery);
+            
+            if (!$nullStmt) {
+                $this->connection->rollback();
+                return [
+                    'success' => false,
+                    'message' => 'Error preparing statement: ' . $this->connection->error,
+                    'error_type' => 'database'
+                ];
+            }
+            
+            $nullStmt->bind_param('s', $household_id);
+            if (!$nullStmt->execute()) {
+                $this->connection->rollback();
+                return [
+                    'success' => false,
+                    'message' => 'Error clearing household head: ' . $nullStmt->error,
+                    'error_type' => 'database'
+                ];
+            }
+            
+            // Step 2: Now delete the household (CASCADE will delete all residents automatically)
             $query = "DELETE FROM " . $this->table . " WHERE household_id = ?";
             $stmt = $this->connection->prepare($query);
             
             if (!$stmt) {
+                $this->connection->rollback();
                 return [
                     'success' => false,
                     'message' => 'Error preparing statement: ' . $this->connection->error,
@@ -217,11 +245,13 @@ class Household {
             $stmt->bind_param('s', $household_id);
             
             if ($stmt->execute()) {
+                $this->connection->commit();
                 return [
                     'success' => true,
                     'message' => 'Household deleted successfully!'
                 ];
             } else {
+                $this->connection->rollback();
                 return [
                     'success' => false,
                     'message' => 'Error deleting household: ' . $stmt->error,
@@ -230,6 +260,7 @@ class Household {
             }
 
         } catch (Exception $e) {
+            $this->connection->rollback();
             return [
                 'success' => false,
                 'message' => 'Exception occurred: ' . $e->getMessage(),
@@ -350,10 +381,10 @@ class Household {
      * Get all members of a household
      */
     public function getMembers($household_id) {
-        $query = "SELECT r.resident_id, r.first_name, r.middle_name, r.last_name, r.birth_date, r.gender, r.age, r.contact_no, r.email 
+        $query = "SELECT r.resident_id, r.first_name, r.middle_name, r.last_name, r.birth_date, r.gender, r.age, r.contact_no, r.email, r.created_at
                   FROM residents r 
                   WHERE r.household_id = ? 
-                  ORDER BY r.age DESC";
+                  ORDER BY r.created_at ASC";
         $stmt = $this->connection->prepare($query);
         
         if (!$stmt) {
@@ -373,6 +404,98 @@ class Household {
     }
 
     /**
+     * Auto-assign household head based on resident count
+     * Logic: If exactly 1 resident exists, auto-assign as head
+     *        If 0 residents, set head to NULL
+     *        If multiple residents and no head set, assign first resident (oldest by created_at)
+     */
+    public function autoAssignHouseholdHead($household_id) {
+        try {
+            // Get all members for this household
+            $members = $this->getMembers($household_id);
+            $memberCount = count($members);
+            
+            error_log("Auto-assign head for household {$household_id}: {$memberCount} members found");
+            
+            if ($memberCount === 0) {
+                // No residents - set head to NULL
+                $updateQuery = "UPDATE " . $this->table . " SET household_head_id = NULL WHERE household_id = ?";
+                $stmt = $this->connection->prepare($updateQuery);
+                $stmt->bind_param('s', $household_id);
+                $stmt->execute();
+                
+                error_log("No members - head set to NULL");
+                return [
+                    'success' => true,
+                    'message' => 'No residents, head set to NULL',
+                    'household_head_id' => null,
+                    'member_count' => 0
+                ];
+            } elseif ($memberCount === 1) {
+                // Exactly 1 resident - auto-assign as head
+                $residentId = $members[0]['resident_id'];
+                $updateQuery = "UPDATE " . $this->table . " SET household_head_id = ? WHERE household_id = ?";
+                $stmt = $this->connection->prepare($updateQuery);
+                $stmt->bind_param('ss', $residentId, $household_id);
+                $stmt->execute();
+                
+                error_log("Single member - auto-assigned {$residentId} as head");
+                return [
+                    'success' => true,
+                    'message' => 'Single resident auto-assigned as household head',
+                    'household_head_id' => $residentId,
+                    'member_count' => 1
+                ];
+            } else {
+                // Multiple residents - check if head is already set
+                $household = $this->getById($household_id);
+                $currentHeadId = $household['household_head_id'] ?? null;
+                
+                // Check if current head is still a valid member
+                $headStillExists = false;
+                foreach ($members as $member) {
+                    if ($member['resident_id'] === $currentHeadId) {
+                        $headStillExists = true;
+                        break;
+                    }
+                }
+                
+                if (!$currentHeadId || !$headStillExists) {
+                    // No head set or head was removed - assign first resident (earliest created)
+                    $newHeadId = $members[0]['resident_id'];
+                    $updateQuery = "UPDATE " . $this->table . " SET household_head_id = ? WHERE household_id = ?";
+                    $stmt = $this->connection->prepare($updateQuery);
+                    $stmt->bind_param('ss', $newHeadId, $household_id);
+                    $stmt->execute();
+                    
+                    error_log("Multiple members, head reassigned to {$newHeadId}");
+                    return [
+                        'success' => true,
+                        'message' => 'Household head reassigned to first resident',
+                        'household_head_id' => $newHeadId,
+                        'member_count' => $memberCount
+                    ];
+                } else {
+                    // Head is valid, no change needed
+                    error_log("Multiple members, head {$currentHeadId} still valid");
+                    return [
+                        'success' => true,
+                        'message' => 'Household head is valid',
+                        'household_head_id' => $currentHeadId,
+                        'member_count' => $memberCount
+                    ];
+                }
+            }
+        } catch (Exception $e) {
+            error_log("Error in autoAssignHouseholdHead: " . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Error auto-assigning household head: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
      * Update household with member management (add/update/delete members)
      */
     public function updateWithMembers($household_id, $family_no, $address, $income = 0.00, $household_head_id = null, $memberOperations = []) {
@@ -382,8 +505,9 @@ class Household {
             // Start transaction
             $this->connection->begin_transaction();
 
-            // Update household info
-            $updateResult = $this->update($household_id, $family_no, $address, $income, $household_head_id);
+            // IMPORTANT: Update household info WITHOUT household_head_id first to avoid foreign key constraint
+            // We'll update the head AFTER adding new members
+            $updateResult = $this->update($household_id, $family_no, $address, $income, null);
             if (!$updateResult['success']) {
                 throw new Exception($updateResult['message']);
             }
@@ -444,6 +568,19 @@ class Household {
                         $operationsSummary['added']++;
                     } else {
                         throw new Exception('Error adding member: ' . $createResult['message']);
+                    }
+                }
+            }
+
+            // NOW update household head AFTER all members have been added/updated
+            // This ensures the resident exists before setting as head
+            if ($household_head_id !== null) {
+                $headUpdateQuery = "UPDATE " . $this->table . " SET household_head_id = ? WHERE household_id = ?";
+                $headStmt = $this->connection->prepare($headUpdateQuery);
+                if ($headStmt) {
+                    $headStmt->bind_param('ss', $household_head_id, $household_id);
+                    if (!$headStmt->execute()) {
+                        throw new Exception('Error updating household head: ' . $headStmt->error);
                     }
                 }
             }

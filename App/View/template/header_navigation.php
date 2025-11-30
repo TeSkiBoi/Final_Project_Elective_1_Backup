@@ -17,10 +17,14 @@ $roleId = getCurrentUserRole();
         <i class="fas fa-bars"></i>
     </button>
     <!-- Navbar Search-->
-    <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
-        <div class="input-group">
-            <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
+    <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0" id="navbarSearchForm" onsubmit="return false;">
+        <div class="input-group position-relative">
+            <input class="form-control" id="navbarSearchInput" type="text" placeholder="Search menu..." aria-label="Search menu" aria-describedby="btnNavbarSearch" autocomplete="off" />
             <button class="btn btn-primary" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
+            <!-- Search Results Dropdown -->
+            <div id="searchResultsDropdown" class="position-absolute bg-white border rounded shadow-lg" style="display: none; top: 100%; left: 0; right: 0; max-height: 400px; overflow-y: auto; z-index: 9999; margin-top: 2px;">
+                <div id="searchResultsList"></div>
+            </div>
         </div>
     </form>
     <!-- Navbar-->
@@ -60,6 +64,134 @@ $roleId = getCurrentUserRole();
         </div>
     </div>
 </div>
+
+<!-- Sidebar Search Functionality -->
+<script>
+(function() {
+    const searchInput = document.getElementById('navbarSearchInput');
+    const searchResults = document.getElementById('searchResultsDropdown');
+    const searchResultsList = document.getElementById('searchResultsList');
+    const searchBtn = document.getElementById('btnNavbarSearch');
+    
+    if (!searchInput) return;
+    
+    // Collect all navigation items
+    function getNavigationItems() {
+        const items = [];
+        const sidebar = document.querySelector('#sidenavAccordion');
+        if (!sidebar) return items;
+        
+        // Get all nav links from sidebar
+        const navLinks = sidebar.querySelectorAll('a.nav-link[href]:not([href="#"])');
+        navLinks.forEach(link => {
+            const text = link.textContent.trim();
+            const href = link.getAttribute('href');
+            const icon = link.querySelector('i');
+            const iconClass = icon ? icon.className : 'fas fa-link';
+            
+            if (text && href && href !== '#') {
+                items.push({
+                    text: text,
+                    href: href,
+                    icon: iconClass
+                });
+            }
+        });
+        
+        return items;
+    }
+    
+    // Perform search
+    function performSearch(query) {
+        if (!query || query.length < 2) {
+            searchResults.style.display = 'none';
+            return;
+        }
+        
+        const items = getNavigationItems();
+        const lowerQuery = query.toLowerCase();
+        
+        // Filter and score results
+        const matches = items.filter(item => {
+            return item.text.toLowerCase().includes(lowerQuery);
+        }).sort((a, b) => {
+            // Prioritize items that start with the query
+            const aStarts = a.text.toLowerCase().startsWith(lowerQuery);
+            const bStarts = b.text.toLowerCase().startsWith(lowerQuery);
+            if (aStarts && !bStarts) return -1;
+            if (!aStarts && bStarts) return 1;
+            return a.text.localeCompare(b.text);
+        });
+        
+        displayResults(matches, query);
+    }
+    
+    // Display search results
+    function displayResults(matches, query) {
+        if (matches.length === 0) {
+            searchResultsList.innerHTML = '<div class="p-3 text-muted text-center"><i class="fas fa-search me-2"></i>No results found</div>';
+            searchResults.style.display = 'block';
+            return;
+        }
+        
+        const html = matches.map(item => {
+            // Highlight matching text
+            const regex = new RegExp(`(${query})`, 'gi');
+            const highlightedText = item.text.replace(regex, '<mark class="bg-warning">$1</mark>');
+            
+            return `
+                <a href="${item.href}" class="d-flex align-items-center text-decoration-none p-3 border-bottom hover-bg-light" style="color: #333; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f8f9fa'" onmouseout="this.style.backgroundColor='white'">
+                    <i class="${item.icon} me-3" style="width: 20px; color: #0d6efd;"></i>
+                    <span>${highlightedText}</span>
+                </a>
+            `;
+        }).join('');
+        
+        searchResultsList.innerHTML = html;
+        searchResults.style.display = 'block';
+    }
+    
+    // Event listeners
+    searchInput.addEventListener('input', function(e) {
+        performSearch(e.target.value);
+    });
+    
+    searchInput.addEventListener('focus', function(e) {
+        if (e.target.value.length >= 2) {
+            performSearch(e.target.value);
+        }
+    });
+    
+    searchBtn.addEventListener('click', function() {
+        performSearch(searchInput.value);
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !searchResults.contains(e.target) && !searchBtn.contains(e.target)) {
+            searchResults.style.display = 'none';
+        }
+    });
+    
+    // Handle Enter key
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            // Navigate to first result if available
+            const firstLink = searchResultsList.querySelector('a');
+            if (firstLink) {
+                window.location.href = firstLink.getAttribute('href');
+            }
+        }
+        
+        // Close on Escape
+        if (e.key === 'Escape') {
+            searchResults.style.display = 'none';
+            searchInput.blur();
+        }
+    });
+})();
+</script>
 
 <script>
     // Logout confirmation
